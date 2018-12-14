@@ -1,0 +1,69 @@
+version: '3'
+services:
+  ipfs:
+    image: jbenet/go-ipfs
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+      - "9001:9001"
+      - "8081:8080"
+    volumes:
+      - .ipfs-docker-data:/data/ipfs/
+      - .ipfs-docker-staging:/export
+  ganache:
+    image: trufflesuite/ganache-cli
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./ganache-data:/ganache-data
+    command: ["ganache-cli", "-h=0.0.0.0", "-p=8545", "--mnemonic=candy ignore tape escape hen elder amazing august hungry target embody fault", "-a=25", "-l=0xfffffffffff", "--quiet"]
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+  db:
+    image: mysql:5.7
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: digixtest
+      MYSQL_DATABASE: dao_dev
+  dao-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.one
+    volumes:
+      - .:/dao-server
+    ports:
+      - "3005:3005"
+    env_file:
+      - dao-server/.env
+    links:
+      - db:digixdao
+    depends_on:
+      - db
+  dao-contracts-info-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.two
+    env_file:
+      - dao-contracts/.env
+    ports:
+      - "3001:3001"
+      - "3000:3000"
+    links:
+      - ipfs
+      - ganache
+      - mongo
+      - dao-server
+    environment:
+      IPFS_HOST: ipfs
+      IPFS_ENDPOINT_PORT: 5001
+      HTTP_ENDPOINT_PORT: 9001
+    depends_on:
+      - ipfs
+      - ganache
+      - mongo
+      - dao-server
+    tty: true

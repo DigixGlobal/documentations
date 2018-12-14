@@ -1,0 +1,56 @@
+FROM ubuntu:16.04
+
+RUN apt-get update -qq && apt-get install -y libcairo2-dev \
+  libjpeg8-dev libpango1.0-dev libgif-dev build-essential \
+  g++ libusb-1.0-0-dev curl git
+
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash
+RUN apt-get install --yes nodejs
+RUN node -v
+RUN npm -v
+
+RUN mkdir -p /usr/src/dao-contracts
+WORKDIR /usr/src/dao-contracts
+COPY dao-contracts/package.json ./
+RUN npm install
+RUN cd node_modules/truffle && npm install solc@0.4.25 && cd ../..
+COPY dao-contracts/ /usr/src/dao-contracts/
+ENV KEYSTORE /usr/src/dao-contracts/sigmate-v3-test-local.json
+ENV PASSWORD test-local
+RUN /usr/src/dao-contracts/node_modules/.bin/truffle compile
+
+RUN mkdir -p /usr/src/info-server
+WORKDIR /usr/src/info-server
+COPY info-server/package.json ./
+RUN npm install
+COPY info-server/ /usr/src/info-server/
+
+RUN mkdir -p /usr/src/ui/react-material-ui-suite
+WORKDIR /usr/src/ui/react-material-ui-suite
+COPY digix-dao-ui/react-material-ui-suite/package.json ./
+RUN npm install
+COPY digix-dao-ui/react-material-ui-suite /usr/src/ui/react-material-ui-suite
+
+RUN mkdir -p /usr/src/ui/governance-ui-components
+WORKDIR /usr/src/ui/governance-ui-components
+COPY digix-dao-ui/governance-ui-components/package.json ./
+RUN npm install
+COPY digix-dao-ui/governance-ui-components /usr/src/ui/governance-ui-components
+
+RUN mkdir -p /usr/src/ui/governance-ui
+WORKDIR /usr/src/ui/governance-ui
+COPY digix-dao-ui/governance-ui/package.json ./
+RUN npm install
+COPY digix-dao-ui/governance-ui /usr/src/ui/governance-ui
+
+WORKDIR /usr/src/
+COPY run-server.sh ./
+RUN chmod 777 /usr/src/dao-contracts/docker-entrypoint.sh
+RUN chmod 777 /usr/src/run-server.sh
+
+WORKDIR /usr/src/dao-contracts
+ENTRYPOINT ["/usr/src/dao-contracts/docker-entrypoint.sh"]
+CMD ["../run-server.sh"]
+
+EXPOSE 3001
+EXPOSE 3000

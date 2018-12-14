@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd ~/
 mkdir digix-dao && cd digix-dao
 
 git clone git@github.com:DigixGlobal/dao-contracts.git
