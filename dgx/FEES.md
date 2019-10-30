@@ -7,7 +7,8 @@
 
 # Demurage fees
 ### Overview
-* Demurrage fees can be turned off globally, exempting demurrage for all accounts. For the first one year, global demurrage  is turned off
+* Demurrage fees can be turned off globally, exempting demurrage for all accounts. Since launch in March 2018, global demurrage has been turned off
+as a promotional offer to encourage DGX usage. This fee will be turned on in the future at the discretion of Digix
 * Demurrage fees can also be turned off for specific contracts/accounts
 
 ### When is it deducted from an account A?
