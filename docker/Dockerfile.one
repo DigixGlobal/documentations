@@ -1,0 +1,19 @@
+FROM ruby:2.5.3
+RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs vim
+
+RUN mkdir /dao-server
+
+WORKDIR /usr/src/dao-server
+COPY dao-server/Gemfile /usr/src/dao-server/Gemfile
+COPY dao-server/Gemfile.lock /usr/src/dao-server/Gemfile.lock
+RUN bundle install
+
+ADD dao-server/ /usr/src/dao-server
+
+RUN chmod 755 docker-entrypoint.sh
+RUN chmod 755 wait-for-it.sh
+ENTRYPOINT ["/usr/src/dao-server/docker-entrypoint.sh"]
+
+EXPOSE 3005
+
+CMD ["./wait-for-it.sh", "db:3306", "--", "bundle", "exec", "rails", "s", "-b", "0.0.0.0", "-p", "3005"]
